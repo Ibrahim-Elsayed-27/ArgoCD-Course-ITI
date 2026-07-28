@@ -27,7 +27,7 @@ spec:
       containers:
         - name: app
           # Replace with your built image (push to registry in your CD pipeline)
-          image: your-registry/gym-profile-service:latest
+          image: ibrahim27501/gym-profile-service:13
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
