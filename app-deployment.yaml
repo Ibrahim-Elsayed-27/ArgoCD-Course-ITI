@@ -24,7 +24,7 @@ spec:
             ]
       containers:
         - name: gym-progress-service
-          image: your-registry/gym-progress-service:latest
+          image:  ibrahim27501/gym-progress-service:latest
           ports:
             - containerPort: 3000
           env:
