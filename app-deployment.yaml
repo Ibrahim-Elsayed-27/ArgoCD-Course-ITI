@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gym-profile-service
+  labels:
+    app: gym-profile-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gym-profile-service
+  template:
+    metadata:
+      labels:
+        app: gym-profile-service
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.35.0
+          imagePullPolicy: IfNotPresent
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done;",
+            ]
+      containers:
+        - name: app
+          # Replace with your built image (push to registry in your CD pipeline)
+          image: your-registry/gym-profile-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            # The CD pipeline should create a secret called `postgres-secret` with a
+            # key `DATABASE_URL` containing the full connection string, e.g.
+            # postgresql://user:password@postgres:5432/dbname
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: DATABASE_URL
+            # Optional: PGSSLMODE if you require SSL
+            - name: PGSSLMODE
+              value: "disable"
+
+# The app pods will resolve DNS name `postgres` in the same namespace and
+# connect using the `DATABASE_URL` secret value provided by your CD pipeline.

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            # Secrets should be created by your CD pipeline as `postgres-secret`
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp-standard
+        resources:
+          requests:
+            storage: 1Gi
+
+# Notes:
+# - This StatefulSet relies on a Secret named `postgres-secret` being present in the same namespace
+#   (the CD pipeline should create/populate it). Required keys: POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD.
+# - The StatefulSet uses a volumeClaimTemplate so Kubernetes will create a PVC for the single replica.
+# - The `postgres` Service (above) exposes this StatefulSet; your app can connect to `postgres:5432`.

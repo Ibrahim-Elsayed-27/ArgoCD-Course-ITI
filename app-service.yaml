@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gym-profile-service
+  labels:
+    app: gym-profile-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: gym-profile-service
+
+# Use this service to access the app internally: http://gym-profile-service:3000
