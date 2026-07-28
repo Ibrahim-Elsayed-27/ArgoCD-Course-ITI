@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: progress-service
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Ibrahim-Elsayed-27/ArgoCD-Course-ITI.git
+    targetRevision: gym-progress-service
+    path: .
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gym
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
